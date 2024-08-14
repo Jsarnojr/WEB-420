@@ -1,2 +1,6 @@
-# WEB-420
-This is my repository for Web-420
+# WEB 420 RESTful APIs
+
+## Contributors
+
+- Instructor: Richard Krasso
+- Joseph Sarno
