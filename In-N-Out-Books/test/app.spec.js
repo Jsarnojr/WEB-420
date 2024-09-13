@@ -1,26 +1,41 @@
-// test/app.spec.js
 const request = require('supertest');
-const app = require('../src/app'); // Ensure this path is correct
+const app = require('../src/app');
 
 describe('Chapter X: API Tests', () => {
-    test("Should return an array of books", async () => {
-        const res = await request(app).get('/api/books');
-        expect(res.statusCode).toBe(200);
-        expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body.length).toBeGreaterThan(0);
+    let mockBook = { id: '1', title: 'Mock Book', author: 'John Doe' };
+
+    // Test case for adding a new book (success)
+    it('Should return a 201-status code when adding a new book', async () => {
+        const res = await request(app)
+            .post('/api/books')
+            .send(mockBook);
+
+        expect(res.statusCode).toEqual(201);
+        expect(res.body).toHaveProperty('id');
+        expect(res.body).toHaveProperty('title', mockBook.title);
+        expect(res.body).toHaveProperty('author', mockBook.author);
     });
 
-    test("Should return a single book", async () => {
-        const res = await request(app).get('/api/books/1');
-        expect(res.statusCode).toBe(200);
-        expect(res.body).toHaveProperty('id', 1);
-        expect(res.body).toHaveProperty('title');
-        expect(res.body).toHaveProperty('author');
+    // Test case for adding a new book with missing title (error)
+    it('Should return a 400-status code when adding a new book with missing title', async () => {
+        const incompleteBook = { id: '2', author: 'Jane Doe' };
+
+        const res = await request(app)
+            .post('/api/books')
+            .send(incompleteBook);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty('message', 'Book title is required');
     });
 
-    test("Should return a 400 error if the id is not a number", async () => {
-        const res = await request(app).get('/api/books/abc');
-        expect(res.statusCode).toBe(400);
-        expect(res.body).toHaveProperty('error', 'Invalid ID, must be a number');
+    // Test case for deleting a book by id (success)
+    it('Should return a 204-status code when deleting a book', async () => {
+        // First, add a book to delete
+        await request(app).post('/api/books').send(mockBook);
+
+        // Delete the book
+        const res = await request(app).delete(`/api/books/${mockBook.id}`);
+
+        expect(res.statusCode).toEqual(204);
     });
 });
