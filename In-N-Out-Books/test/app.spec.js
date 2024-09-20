@@ -38,4 +38,39 @@ describe('Chapter X: API Tests', () => {
 
         expect(res.statusCode).toEqual(204);
     });
+
+    // Test case for updating a book and returning a 204-status code (success)
+    it('Should update a book and return a 204-status code', async () => {
+        const updatedBook = { title: 'Updated Mock Book', author: 'John Doe' };
+
+        const res = await request(app)
+            .put(`/api/books/${mockBook.id}`)
+            .send(updatedBook);
+
+        expect(res.statusCode).toEqual(204);
+    });
+
+    // Test case for non-numeric id
+    it('Should return a 400-status code when using a non-numeric id', async () => {
+        const updatedBook = { title: 'Updated Mock Book', author: 'John Doe' };
+
+        const res = await request(app)
+            .put('/api/books/foo')
+            .send(updatedBook);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty('error', 'Input must be a number'); // Updated to check 'error'
+    });
+
+    // Test case for updating a book with missing title
+    it('Should return a 400-status code when updating a book with missing title', async () => {
+        const incompleteBook = { author: 'John Doe' };
+
+        const res = await request(app)
+            .put(`/api/books/${mockBook.id}`)
+            .send(incompleteBook);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty('error', 'Bad Request'); // Updated to check 'error'
+    });
 });

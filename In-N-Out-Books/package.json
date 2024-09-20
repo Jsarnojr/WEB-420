@@ -4,20 +4,19 @@
     "description": "API project for in-n-out-books",
     "main": "src/app.js",
     "scripts": {
-      "test": "jest"
+        "test": "jest"
     },
     "author": "Joseph Sarno",
     "license": "ISC",
     "dependencies": {
-      "express": "^4.21.0"
+        "express": "^4.21.0"
     },
     "devDependencies": {
-      "jest": "^27.5.1",
-      "supertest": "^6.3.4"
+        "jest": "^27.5.1",
+        "supertest": "^6.3.4"
     },
     "directories": {
-      "test": "test"
+        "test": "test"
     },
     "keywords": []
-  }
-  
+}

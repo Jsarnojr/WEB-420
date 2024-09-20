@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
+const booksDB = require('../database/books'); // Assuming books.js holds the mock database
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-let books = []; // In-memory mock database (array of book objects)
+let books = []; // In-memory mock database for this example
 
 // POST route to add a new book
 app.post('/api/books', (req, res) => {
@@ -46,6 +46,40 @@ app.delete('/api/books/:id', (req, res) => {
         return res.status(204).send(); // Return 204-status code for successful deletion
     } catch (error) {
         return res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// PUT /api/books/:id route to update a book by id
+app.put('/api/books/:id', (req, res) => {
+    const { id } = req.params;
+    const { title, author } = req.body;
+
+    try {
+        // Check if id is a number
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Input must be a number' });
+        }
+
+        // Check if title is provided
+        if (!title) {
+            return res.status(400).json({ error: 'Bad Request' });
+        }
+
+        // Find the book in the mock database
+        const bookIndex = books.findIndex(book => book.id === id);
+
+        if (bookIndex === -1) {
+            return res.status(404).json({ error: 'Book not found' });
+        }
+
+        // Update the book in the database
+        books[bookIndex] = { id, title, author };
+
+        // Respond with 204 status code for successful update
+        return res.status(204).send();
+    } catch (error) {
+        // Generic error handler
+        return res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
