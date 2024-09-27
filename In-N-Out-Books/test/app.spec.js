@@ -1,3 +1,4 @@
+// src/app.spec.js
 const request = require('supertest');
 const app = require('../src/app');
 
@@ -41,6 +42,9 @@ describe('Chapter X: API Tests', () => {
 
     // Test case for updating a book and returning a 204-status code (success)
     it('Should update a book and return a 204-status code', async () => {
+        // First, add the book to update
+        await request(app).post('/api/books').send(mockBook);
+        
         const updatedBook = { title: 'Updated Mock Book', author: 'John Doe' };
 
         const res = await request(app)
@@ -59,11 +63,14 @@ describe('Chapter X: API Tests', () => {
             .send(updatedBook);
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toHaveProperty('error', 'Input must be a number'); // Updated to check 'error'
+        expect(res.body).toHaveProperty('error', 'Input must be a number');
     });
 
     // Test case for updating a book with missing title
     it('Should return a 400-status code when updating a book with missing title', async () => {
+        // First, add the book to update
+        await request(app).post('/api/books').send(mockBook);
+
         const incompleteBook = { author: 'John Doe' };
 
         const res = await request(app)
@@ -71,6 +78,6 @@ describe('Chapter X: API Tests', () => {
             .send(incompleteBook);
 
         expect(res.statusCode).toEqual(400);
-        expect(res.body).toHaveProperty('error', 'Bad Request'); // Updated to check 'error'
+        expect(res.body).toHaveProperty('error', 'Bad Request: Title is required'); // Updated to match the response
     });
 });

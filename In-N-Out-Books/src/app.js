@@ -1,10 +1,11 @@
+// src/app.js
 const express = require('express');
 const app = express();
-const booksDB = require('../database/books'); // Assuming books.js holds the mock database
 
-app.use(express.json());
+// In-memory mock database for this example (can replace with database calls)
+let books = [];
 
-let books = []; // In-memory mock database for this example
+app.use(express.json()); // Middleware to parse JSON bodies
 
 // POST route to add a new book
 app.post('/api/books', (req, res) => {
@@ -33,6 +34,11 @@ app.delete('/api/books/:id', (req, res) => {
     try {
         const { id } = req.params;
 
+        // Check if id is a number
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Input must be a number' });
+        }
+
         // Find the index of the book with the matching id
         const bookIndex = books.findIndex((book) => book.id === id);
 
@@ -49,7 +55,7 @@ app.delete('/api/books/:id', (req, res) => {
     }
 });
 
-// PUT /api/books/:id route to update a book by id
+// PUT route to update a book by id
 app.put('/api/books/:id', (req, res) => {
     const { id } = req.params;
     const { title, author } = req.body;
@@ -62,7 +68,7 @@ app.put('/api/books/:id', (req, res) => {
 
         // Check if title is provided
         if (!title) {
-            return res.status(400).json({ error: 'Bad Request' });
+            return res.status(400).json({ error: 'Bad Request: Title is required' });
         }
 
         // Find the book in the mock database
@@ -78,7 +84,6 @@ app.put('/api/books/:id', (req, res) => {
         // Respond with 204 status code for successful update
         return res.status(204).send();
     } catch (error) {
-        // Generic error handler
         return res.status(500).json({ error: 'Something went wrong' });
     }
 });
