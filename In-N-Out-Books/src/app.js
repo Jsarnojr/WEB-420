@@ -1,90 +1,62 @@
 // src/app.js
 const express = require('express');
+const bodyParser = require('body-parser');
+const Ajv = require('ajv');
+
 const app = express();
+const ajv = new Ajv();
 
-// In-memory mock database for this example (can replace with database calls)
-let books = [];
+app.use(bodyParser.json());
 
-app.use(express.json()); // Middleware to parse JSON bodies
+// Mock database for users and their security questions
+const mockDatabase = {
+    'user@example.com': {
+        securityQuestion1: 'What is your pet’s name?',
+        securityAnswer1: 'Fluffy',
+        securityQuestion2: 'What is your favorite color?',
+        securityAnswer2: 'Blue',
+    },
+};
 
-// POST route to add a new book
-app.post('/api/books', (req, res) => {
+// Validation schema for security questions
+const securityQuestionSchema = {
+    type: 'object',
+    properties: {
+        answer1: { type: 'string' },
+        answer2: { type: 'string' },
+    },
+    required: ['answer1', 'answer2'],
+};
+
+// POST route to verify security questions
+app.post('/api/users/:email/verify-security-question', async (req, res) => {
     try {
-        const { id, title, author } = req.body;
+        const email = req.params.email;
+        const validate = ajv.compile(securityQuestionSchema);
+        const valid = validate(req.body);
 
-        // Check if the title is missing
-        if (!title) {
-            throw new Error('Book title is required');
+        if (!valid) {
+            return res.status(400).json({ message: 'Bad Request' });
         }
 
-        const newBook = { id, title, author };
-        books.push(newBook);
+        const user = mockDatabase[email];
+        if (!user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
-        return res.status(201).json(newBook); // Return 201-status code when book is added successfully
+        const { answer1, answer2 } = req.body;
+
+        if (
+            answer1 === user.securityAnswer1 &&
+            answer2 === user.securityAnswer2
+        ) {
+            return res.status(200).json({ message: 'Security questions successfully answered' });
+        } else {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
     } catch (error) {
-        if (error.message === 'Book title is required') {
-            return res.status(400).json({ message: error.message });
-        }
-        return res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// DELETE route to delete a book by id
-app.delete('/api/books/:id', (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Check if id is a number
-        if (isNaN(id)) {
-            return res.status(400).json({ error: 'Input must be a number' });
-        }
-
-        // Find the index of the book with the matching id
-        const bookIndex = books.findIndex((book) => book.id === id);
-
-        if (bookIndex === -1) {
-            return res.status(404).json({ message: 'Book not found' });
-        }
-
-        // Remove the book from the array
-        books.splice(bookIndex, 1);
-
-        return res.status(204).send(); // Return 204-status code for successful deletion
-    } catch (error) {
-        return res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// PUT route to update a book by id
-app.put('/api/books/:id', (req, res) => {
-    const { id } = req.params;
-    const { title, author } = req.body;
-
-    try {
-        // Check if id is a number
-        if (isNaN(id)) {
-            return res.status(400).json({ error: 'Input must be a number' });
-        }
-
-        // Check if title is provided
-        if (!title) {
-            return res.status(400).json({ error: 'Bad Request: Title is required' });
-        }
-
-        // Find the book in the mock database
-        const bookIndex = books.findIndex(book => book.id === id);
-
-        if (bookIndex === -1) {
-            return res.status(404).json({ error: 'Book not found' });
-        }
-
-        // Update the book in the database
-        books[bookIndex] = { id, title, author };
-
-        // Respond with 204 status code for successful update
-        return res.status(204).send();
-    } catch (error) {
-        return res.status(500).json({ error: 'Something went wrong' });
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 

@@ -1,83 +1,46 @@
 // src/app.spec.js
 const request = require('supertest');
-const app = require('../src/app');
+const app = require('../src/app.js');
 
-describe('Chapter X: API Tests', () => {
-    let mockBook = { id: '1', title: 'Mock Book', author: 'John Doe' };
+describe('Chapter 1: API Tests', () => {
+    describe('POST /api/users/:email/verify-security-question', () => {
+        // Test case for successful security question verification
+        it('Should return a 200 status with "Security questions successfully answered" message', async () => {
+            const res = await request(app)
+                .post('/api/users/user@example.com/verify-security-question')
+                .send({
+                    answer1: 'Fluffy',
+                    answer2: 'Blue'
+                });
 
-    // Test case for adding a new book (success)
-    it('Should return a 201-status code when adding a new book', async () => {
-        const res = await request(app)
-            .post('/api/books')
-            .send(mockBook);
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveProperty('message', 'Security questions successfully answered');
+        });
 
-        expect(res.statusCode).toEqual(201);
-        expect(res.body).toHaveProperty('id');
-        expect(res.body).toHaveProperty('title', mockBook.title);
-        expect(res.body).toHaveProperty('author', mockBook.author);
-    });
+        // Test case for incorrect answers
+        it('Should return a 401 status code with "Unauthorized" message when security questions are incorrect', async () => {
+            const res = await request(app)
+                .post('/api/users/user@example.com/verify-security-question')
+                .send({
+                    answer1: 'WrongName',
+                    answer2: 'WrongColor'
+                });
 
-    // Test case for adding a new book with missing title (error)
-    it('Should return a 400-status code when adding a new book with missing title', async () => {
-        const incompleteBook = { id: '2', author: 'Jane Doe' };
+            expect(res.statusCode).toEqual(401);
+            expect(res.body).toHaveProperty('message', 'Unauthorized');
+        });
 
-        const res = await request(app)
-            .post('/api/books')
-            .send(incompleteBook);
+        // Test case for invalid request body
+        it('Should return a 400 status code with "Bad Request" message when request body fails ajv validation', async () => {
+            const res = await request(app)
+                .post('/api/users/user@example.com/verify-security-question')
+                .send({
+                    answer1: 'Fluffy'
+                    // Missing answer2
+                });
 
-        expect(res.statusCode).toEqual(400);
-        expect(res.body).toHaveProperty('message', 'Book title is required');
-    });
-
-    // Test case for deleting a book by id (success)
-    it('Should return a 204-status code when deleting a book', async () => {
-        // First, add a book to delete
-        await request(app).post('/api/books').send(mockBook);
-
-        // Delete the book
-        const res = await request(app).delete(`/api/books/${mockBook.id}`);
-
-        expect(res.statusCode).toEqual(204);
-    });
-
-    // Test case for updating a book and returning a 204-status code (success)
-    it('Should update a book and return a 204-status code', async () => {
-        // First, add the book to update
-        await request(app).post('/api/books').send(mockBook);
-        
-        const updatedBook = { title: 'Updated Mock Book', author: 'John Doe' };
-
-        const res = await request(app)
-            .put(`/api/books/${mockBook.id}`)
-            .send(updatedBook);
-
-        expect(res.statusCode).toEqual(204);
-    });
-
-    // Test case for non-numeric id
-    it('Should return a 400-status code when using a non-numeric id', async () => {
-        const updatedBook = { title: 'Updated Mock Book', author: 'John Doe' };
-
-        const res = await request(app)
-            .put('/api/books/foo')
-            .send(updatedBook);
-
-        expect(res.statusCode).toEqual(400);
-        expect(res.body).toHaveProperty('error', 'Input must be a number');
-    });
-
-    // Test case for updating a book with missing title
-    it('Should return a 400-status code when updating a book with missing title', async () => {
-        // First, add the book to update
-        await request(app).post('/api/books').send(mockBook);
-
-        const incompleteBook = { author: 'John Doe' };
-
-        const res = await request(app)
-            .put(`/api/books/${mockBook.id}`)
-            .send(incompleteBook);
-
-        expect(res.statusCode).toEqual(400);
-        expect(res.body).toHaveProperty('error', 'Bad Request: Title is required'); // Updated to match the response
+            expect(res.statusCode).toEqual(400);
+            expect(res.body).toHaveProperty('message', 'Bad Request');
+        });
     });
 });

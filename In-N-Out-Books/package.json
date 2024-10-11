@@ -1,23 +1,28 @@
 {
-    "name": "in-n-out-books",
-    "version": "1.0.0",
-    "description": "API project for in-n-out-books",
-    "main": "src/app.js",
-    "scripts": {
-        "test": "jest"
-    },
-    "author": "Joseph Sarno",
-    "license": "ISC",
-    "dependencies": {
-        "bcryptjs": "^2.4.3",
-        "express": "^4.21.0"
-    },
-    "devDependencies": {
-        "jest": "^27.5.1",
-        "supertest": "^6.3.4"
-    },
-    "directories": {
-        "test": "test"
-    },
-    "keywords": []
+  "name": "in-n-out-books",
+  "version": "1.0.0",
+  "description": "API project for in-n-out-books",
+  "main": "src/app.js",
+  "author": "Joseph Sarno",
+  "license": "ISC",
+  "keywords": [],
+  "scripts": {
+    "start": "node src/app.js",          
+    "test": "jest"                       
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.0",                
+    "chai": "^4.3.4",                    
+    "chai-http": "^4.3.0"                
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "supertest": "^6.3.4",               
+    "mocha": "^8.4.0"                    
+  },
+  "directories": {
+    "test": "test"
+  }
 }
